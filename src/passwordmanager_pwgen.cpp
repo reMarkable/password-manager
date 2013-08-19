@@ -22,6 +22,7 @@
 #include "passwordmanager_pwgen.h"
 
 #include <QtGlobal>
+#include <stdio.h>
 
 /* Length of a generated password */
 #define PASSWORD_LENGTH 10
@@ -30,12 +31,20 @@ QString
 PasswordManagerPwGen::generate()
 {
     static const char CHARS[] = "acefhjkmnsuvwxyz3579";
-    char password[PASSWORD_LENGTH];
+    unsigned char password[PASSWORD_LENGTH];
+
+    FILE *fp = fopen("/dev/urandom", "rb");
+    size_t result = fread(password, sizeof(password), 1, fp);
+    fclose(fp);
+
+    if (result != 1) {
+        return QString();
+    }
 
     for (int i=0; i<sizeof(password); i++) {
-        password[i] = CHARS[rand() % (sizeof(CHARS)-1)];
+        password[i] = CHARS[password[i] % (sizeof(CHARS)-1)];
     }
     password[sizeof(password)-1] = '\0';
 
-    return password;
+    return QString((const char *)(password));
 }
