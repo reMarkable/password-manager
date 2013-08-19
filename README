@@ -1,0 +1,16 @@
+Nemo Password Manager: D-Bus Service for changing and generating passwords
+--------------------------------------------------------------------------
+
+Password Manager manages user account passwords for developer mode.
+It can generate random passwords or set user-supplied passwords.
+
+Dependencies:
+    - Qt 5
+    - Qt 5 D-Bus Add-On
+    - PAM
+
+License:
+    - GPLv2 or later
+
+Web:
+    - https://github.com/nemomobile/password-manager/
