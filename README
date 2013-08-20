@@ -8,6 +8,7 @@ Dependencies:
     - Qt 5
     - Qt 5 D-Bus Add-On
     - PAM
+    - libshadowutils (https://github.com/nemomobile/libshadowutils)
 
 License:
     - GPLv2 or later

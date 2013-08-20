@@ -6,6 +6,9 @@ QT -= gui
 
 LIBS += -lpam
 
+CONFIG += link_pkgconfig
+PKGCONFIG += libshadowutils
+
 # Uncomment the following line for debugging output on stderr
 #DEFINES += PASSWORDMANAGER_DEBUG
 
