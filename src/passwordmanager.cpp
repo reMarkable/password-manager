@@ -61,7 +61,9 @@ PasswordManager::generatePassword()
 
     QString message;
     if (PasswordManagerPAM::set(password, &message)) {
-        store.set(password);
+        if (!(store.set(password))) {
+            emit error("Could not save password");
+        }
         emit passwordChanged(password);
     } else {
         emit error(message);

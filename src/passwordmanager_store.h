@@ -30,11 +30,11 @@ class PasswordManagerStore {
         ~PasswordManagerStore();
 
         QString get();
-        void set(const QString &password);
+        bool set(const QString &password);
 
     private:
-        void load();
-        void save();
+        bool load();
+        bool save();
 
     private:
         QString password;

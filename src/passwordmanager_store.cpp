@@ -21,6 +21,12 @@
 
 #include "passwordmanager_store.h"
 
+#include <QFile>
+
+#define PASSWORDMANAGER_STATEFILE "/etc/nemo-password-manager.conf"
+#define PASSWORDMANAGER_STATEFILE_TMP PASSWORDMANAGER_STATEFILE ".tmp"
+
+
 PasswordManagerStore::PasswordManagerStore()
     : password("")
 {
@@ -37,21 +43,76 @@ PasswordManagerStore::get()
     return password;
 }
 
-void
+bool
 PasswordManagerStore::set(const QString &password)
 {
     this->password = password;
-    save();
+    return save();
 }
 
-void
+bool
 PasswordManagerStore::load()
 {
-    // TODO: retrieve password
+    QFile file(PASSWORDMANAGER_STATEFILE);
+
+    if (!file.exists()) {
+        // File does not exist (yet)
+        password = "";
+        return false;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        // Could not open file for reading
+        password = "";
+        return false;
+    }
+
+    QByteArray utf8 = file.readAll();
+    if (!utf8.isEmpty()) {
+        // Successfully read the password
+        password = QString::fromUtf8(utf8);
+    }
+
+    file.close();
+    return true;
 }
 
-void
+bool
 PasswordManagerStore::save()
 {
-    // TODO: store password
+    QByteArray utf8 = password.toUtf8();
+
+    QFile tmp(PASSWORDMANAGER_STATEFILE_TMP);
+
+    if (tmp.exists()) {
+        // Remove existing temporary file
+        tmp.remove();
+    }
+
+    if (!tmp.open(QIODevice::WriteOnly)) {
+        // Could not open file for writing
+        return false;
+    }
+
+    tmp.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+    qint64 written = tmp.write(utf8);
+    tmp.close();
+
+    if (written != utf8.size()) {
+        // Not all bytes were written - remove the file
+        tmp.remove();
+        return false;
+    }
+
+    if (QFile::exists(PASSWORDMANAGER_STATEFILE)) {
+        QFile::remove(PASSWORDMANAGER_STATEFILE);
+    }
+
+    if (!tmp.rename(PASSWORDMANAGER_STATEFILE)) {
+        // Could not rename temporary file
+        tmp.remove();
+        return false;
+    }
+
+    return true;
 }
