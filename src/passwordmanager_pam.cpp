@@ -21,6 +21,8 @@
 
 #include "passwordmanager_pam.h"
 
+#include <getdef.h>
+#include <pwd.h>
 #include <security/pam_appl.h>
 #include <stdio.h>
 
@@ -59,8 +61,22 @@ pam_conversation_func(int num_msg, const struct pam_message **msg,
 bool
 PasswordManagerPAM::set(const QString &password, QString *error)
 {
-    // TODO: get username from UID_MIN in /etc/login.defs
-    return passwd("nemo", password, error);
+    int uid = getdef_num("UID_MIN", -1);
+
+    if (uid == -1) {
+        PW_MGR_PAM_DEBUG("Cannot look up UID_MIN - falling back to user 'nemo'");
+        return passwd("nemo", password, error);
+    }
+
+    struct passwd *pw = getpwuid(uid);
+    if (pw == NULL) {
+        // Fallback to setting password of "nemo" user if we cannot get
+        PW_MGR_PAM_DEBUG("User with uid=%d (UID_MIN) does not exist - falling back to user 'nemo'", uid);
+        return passwd("nemo", password, error);
+    }
+
+    PW_MGR_PAM_DEBUG("Setting password for user '%s' (uid=%d)", pw->pw_name, uid);
+    return passwd(pw->pw_name, password, error);
 }
 
 bool

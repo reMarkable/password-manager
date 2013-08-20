@@ -13,6 +13,7 @@ Source: %{name}-%{version}.tar.gz
 
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5DBus)
+BuildRequires: pkgconfig(libshadowutils)
 BuildRequires: pam-devel
 Requires: dbus
 Requires: procps
