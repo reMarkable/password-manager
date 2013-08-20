@@ -4,6 +4,7 @@ Release: 1
 Summary: D-Bus Service for changing and generating passwords
 
 %define dbus_service_name org.nemo.passwordmanager
+%define dbus_service_path /org/nemo/passwordmanager
 
 Group: System Environment/Daemon
 License: GPL
@@ -13,6 +14,8 @@ Source: %{name}-%{version}.tar.gz
 BuildRequires: pkgconfig(Qt5Core)
 BuildRequires: pkgconfig(Qt5DBus)
 BuildRequires: pam-devel
+Requires: dbus
+Requires: procps
 
 %description
 Password Manager manages user account passwords for developer mode.
@@ -35,10 +38,20 @@ rm -rf %{buildroot}
 
 
 %post
-# TODO: Ask running daemon to quit
+# Ask running daemon to quit
+if pgrep -u root -f %{name} >/dev/null; then
+    dbus-send --system --dest=%{dbus_service_name} \
+        --print-reply %{dbus_service_path} \
+        %{dbus_service_name}.quit >/dev/null 2>&1 || true
+fi
 
-%postun
-# TODO: Ask running daemon to quit
+%preun
+# Ask running daemon to quit
+if pgrep -u root -f %{name} >/dev/null; then
+    dbus-send --system --dest=%{dbus_service_name} \
+        --print-reply %{dbus_service_path} \
+        %{dbus_service_name}.quit >/dev/null 2>&1 || true
+fi
 
 
 %files
