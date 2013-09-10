@@ -38,10 +38,12 @@ class PasswordManager : public QObject {
         void generatePassword();
         QString getGeneratedPassword();
         void setPassword(const QString &password);
+        bool isLoginEnabled();
         void quit();
 
     signals:
         void passwordChanged(const QString &password);
+        void loginEnabledChanged(bool enabled);
         void error(const QString &message);
 
     private:

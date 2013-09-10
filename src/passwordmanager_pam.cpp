@@ -26,6 +26,8 @@
 #include <security/pam_appl.h>
 #include <stdio.h>
 
+#include <QProcess>
+
 #ifdef PASSWORDMANAGER_DEBUG
 #  define PW_MGR_PAM_DEBUG(msg, ...) fprintf(stderr, msg "\n", ## __VA_ARGS__)
 #else
@@ -62,26 +64,43 @@ bool
 PasswordManagerPAM::set(const QString &password, QString *error)
 {
     int uid = getdef_num("UID_MIN", -1);
+    QString username = "nemo";
 
     if (uid == -1) {
-        PW_MGR_PAM_DEBUG("Cannot look up UID_MIN - falling back to user 'nemo'");
-        return passwd("nemo", password, error);
+        PW_MGR_PAM_DEBUG("Cannot look up UID_MIN");
+    } else {
+        struct passwd *pw = getpwuid(uid);
+        if (pw == NULL) {
+            // Fallback to setting password of "nemo" user if we cannot get
+            PW_MGR_PAM_DEBUG("User with uid=%d (UID_MIN) does not exist", uid);
+        } else {
+            PW_MGR_PAM_DEBUG("Setting password for user '%s' (uid=%d)", pw->pw_name, uid);
+            username = pw->pw_name;
+        }
     }
 
-    struct passwd *pw = getpwuid(uid);
-    if (pw == NULL) {
-        // Fallback to setting password of "nemo" user if we cannot get
-        PW_MGR_PAM_DEBUG("User with uid=%d (UID_MIN) does not exist - falling back to user 'nemo'", uid);
-        return passwd("nemo", password, error);
-    }
-
-    PW_MGR_PAM_DEBUG("Setting password for user '%s' (uid=%d)", pw->pw_name, uid);
-    return passwd(pw->pw_name, password, error);
+    return passwd(username, password, error);
 }
 
 bool
 PasswordManagerPAM::passwd(const QString &username, const QString &password, QString *error)
 {
+    if (password == "") {
+        QString usermod = "/usr/sbin/usermod";
+        QStringList args;
+        args << "-p";
+        args << "";
+        args << username;
+        PW_MGR_PAM_DEBUG("Clearing password with usermod");
+        if (QProcess::execute(usermod, args) != 0) {
+            if (error) {
+                *error = QString("Cannot clear password");
+            }
+        }
+
+        return true;
+    }
+
     QByteArray user = username.toLocal8Bit();
     QByteArray pass = password.toLocal8Bit();
 
