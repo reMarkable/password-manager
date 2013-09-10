@@ -57,6 +57,7 @@ PasswordManager::~PasswordManager()
 void
 PasswordManager::generatePassword()
 {
+    bool loginEnabled = isLoginEnabled();
     QString password = PasswordManagerPwGen::generate();
 
     QString message;
@@ -65,6 +66,9 @@ PasswordManager::generatePassword()
             emit error("Could not save password");
         }
         emit passwordChanged(password);
+        if (!loginEnabled) {
+            emit loginEnabledChanged(true);
+        }
     } else {
         emit error(message);
     }
@@ -79,13 +83,30 @@ PasswordManager::getGeneratedPassword()
 void
 PasswordManager::setPassword(const QString &password)
 {
+    bool loginEnabled = isLoginEnabled();
+
     QString message;
     if (PasswordManagerPAM::set(password, &message)) {
-        store.set("");
+        if (password == "") {
+            store.disableLogin();
+        } else {
+            store.set("");
+        }
         emit passwordChanged("");
+        if (!loginEnabled && password != "") {
+            emit loginEnabledChanged(true);
+        } else if (loginEnabled && password == "") {
+            emit loginEnabledChanged(false);
+        }
     } else {
         emit error(message);
     }
+}
+
+bool
+PasswordManager::isLoginEnabled()
+{
+    return store.isLoginEnabled();
 }
 
 void

@@ -32,6 +32,9 @@ class PasswordManagerStore {
         QString get();
         bool set(const QString &password);
 
+        bool isLoginEnabled();
+        void disableLogin();
+
     private:
         bool load();
         bool save();

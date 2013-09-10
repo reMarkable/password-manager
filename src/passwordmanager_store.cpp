@@ -51,6 +51,24 @@ PasswordManagerStore::set(const QString &password)
 }
 
 bool
+PasswordManagerStore::isLoginEnabled()
+{
+    // Password is enabled if the state file exists
+    QFile file(PASSWORDMANAGER_STATEFILE);
+    return file.exists();
+}
+
+void
+PasswordManagerStore::disableLogin()
+{
+    // Remove password file to disable login
+    QFile file(PASSWORDMANAGER_STATEFILE);
+    if (file.exists()) {
+        file.remove();
+    }
+}
+
+bool
 PasswordManagerStore::load()
 {
     QFile file(PASSWORDMANAGER_STATEFILE);
