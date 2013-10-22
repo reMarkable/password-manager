@@ -24,6 +24,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QTimer>
 
 #include "passwordmanager_store.h"
 
@@ -52,6 +53,7 @@ class PasswordManager : public QObject {
 
     private:
         PasswordManagerStore store;
+        QTimer autoclose;
 };
 
 #endif /* ORG_NEMO_PASSWORDMANAGER_H */
