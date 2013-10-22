@@ -37,7 +37,17 @@ PasswordManager::OBJECT_PATH = "/org/nemo/passwordmanager";
 PasswordManager::PasswordManager(QObject *parent)
     : QObject(parent)
     , store()
+    , autoclose()
 {
+    // Inactivity timeout after which the service quits to save resources
+    const int AUTOCLOSE_TIMEOUT_MS = 60 * 1000;
+
+    // Configure auto-close timer to quit the service after inactivity
+    autoclose.setSingleShot(true);
+    autoclose.setInterval(AUTOCLOSE_TIMEOUT_MS);
+    QObject::connect(&autoclose, SIGNAL(timeout()),
+                     this, SLOT(quit()));
+
     QDBusConnection connection = QDBusConnection::systemBus();
     if (!connection.registerService(SERVICE_NAME)) {
         qFatal("Cannot register D-Bus service at %s", SERVICE_NAME);
@@ -48,6 +58,10 @@ PasswordManager::PasswordManager(QObject *parent)
     }
 
     new PasswordManagerAdaptor(this);
+
+    // Every time a client action is carried out, we call autoclose.start() to
+    // reset the timer. Do it here for the first time.
+    autoclose.start();
 }
 
 PasswordManager::~PasswordManager()
@@ -72,11 +86,14 @@ PasswordManager::generatePassword()
     } else {
         emit error(message);
     }
+
+    autoclose.start();
 }
 
 QString
 PasswordManager::getGeneratedPassword()
 {
+    autoclose.start();
     return store.get();
 }
 
@@ -101,6 +118,8 @@ PasswordManager::setPassword(const QString &password)
     } else {
         emit error(message);
     }
+
+    autoclose.start();
 }
 
 bool
