@@ -25,10 +25,11 @@
 #include <QObject>
 #include <QString>
 #include <QTimer>
+#include <QDBusContext>
 
 #include "passwordmanager_store.h"
 
-class PasswordManager : public QObject {
+class PasswordManager : public QObject, protected QDBusContext {
     Q_OBJECT
 
     public:
@@ -50,6 +51,9 @@ class PasswordManager : public QObject {
     private:
         static const char *SERVICE_NAME;
         static const char *OBJECT_PATH;
+
+    private:
+        bool isPrivileged();
 
     private:
         PasswordManagerStore store;

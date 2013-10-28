@@ -36,6 +36,7 @@ PasswordManager::OBJECT_PATH = "/org/nemo/passwordmanager";
 
 PasswordManager::PasswordManager(QObject *parent)
     : QObject(parent)
+    , QDBusContext()
     , store()
     , autoclose()
 {
@@ -71,6 +72,8 @@ PasswordManager::~PasswordManager()
 void
 PasswordManager::generatePassword()
 {
+    if (!isPrivileged()) return;
+
     bool loginEnabled = isLoginEnabled();
     QString password = PasswordManagerPwGen::generate();
 
@@ -79,6 +82,7 @@ PasswordManager::generatePassword()
         if (!(store.set(password))) {
             emit error("Could not save password");
         }
+        // FIXME: Updated password is visible via D-Bus
         emit passwordChanged(password);
         if (!loginEnabled) {
             emit loginEnabledChanged(true);
@@ -93,6 +97,8 @@ PasswordManager::generatePassword()
 QString
 PasswordManager::getGeneratedPassword()
 {
+    if (!isPrivileged()) return QString();
+
     autoclose.start();
     return store.get();
 }
@@ -100,6 +106,8 @@ PasswordManager::getGeneratedPassword()
 void
 PasswordManager::setPassword(const QString &password)
 {
+    if (!isPrivileged()) return;
+
     bool loginEnabled = isLoginEnabled();
 
     QString message;
@@ -125,11 +133,32 @@ PasswordManager::setPassword(const QString &password)
 bool
 PasswordManager::isLoginEnabled()
 {
+    // No privileges needed for login enabled check
+
     return store.isLoginEnabled();
 }
 
 void
 PasswordManager::quit()
 {
+    if (!isPrivileged()) return;
+
     QCoreApplication::quit();
+}
+
+bool
+PasswordManager::isPrivileged()
+{
+    // Get the PID of the calling process
+    pid_t pid = connection().interface()->servicePid(message().service());
+
+    // The /proc/<pid> directory is owned by EUID:EGID of the process
+    QFileInfo info(QString("/proc/%1").arg(pid));
+    if (info.group() != "privileged") {
+        sendErrorReply(QDBusError::AccessDenied,
+                QString("PID %1 is not in privileged group").arg(pid));
+        return false;
+    }
+
+    return true;
 }
