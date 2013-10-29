@@ -148,6 +148,11 @@ PasswordManager::quit()
 bool
 PasswordManager::isPrivileged()
 {
+    if (!calledFromDBus()) {
+        // Local function calls are always privileged
+        return true;
+    }
+
     // Get the PID of the calling process
     pid_t pid = connection().interface()->servicePid(message().service());
 
