@@ -44,7 +44,7 @@ class PasswordManager : public QObject, protected QDBusContext {
         void quit();
 
     signals:
-        void passwordChanged(const QString &password);
+        void passwordChanged();
         void loginEnabledChanged(bool enabled);
         void error(const QString &message);
 

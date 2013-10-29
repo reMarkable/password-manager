@@ -82,8 +82,7 @@ PasswordManager::generatePassword()
         if (!(store.set(password))) {
             emit error("Could not save password");
         }
-        // FIXME: Updated password is visible via D-Bus
-        emit passwordChanged(password);
+        emit passwordChanged();
         if (!loginEnabled) {
             emit loginEnabledChanged(true);
         }
@@ -117,7 +116,7 @@ PasswordManager::setPassword(const QString &password)
         } else {
             store.set("");
         }
-        emit passwordChanged("");
+        emit passwordChanged();
         if (!loginEnabled && password != "") {
             emit loginEnabledChanged(true);
         } else if (loginEnabled && password == "") {
