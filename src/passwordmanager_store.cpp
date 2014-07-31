@@ -47,7 +47,7 @@ bool
 PasswordManagerStore::set(const QString &password)
 {
     // Allow remote logins by starting sshd
-    if (system("systemctl start sshd.socket") != 0) {
+    if (system("/bin/systemctl start sshd.socket") != 0) {
         qWarning() << "Could not start sshd.socket";
     }
 
@@ -73,7 +73,7 @@ PasswordManagerStore::disableLogin()
     }
 
     // Prevent remote logins by stopping sshd
-    if (system("systemctl stop sshd.socket") != 0) {
+    if (system("/bin/systemctl stop sshd.socket") != 0) {
         qWarning() << "Could not stop sshd.socket";
     }
 }
