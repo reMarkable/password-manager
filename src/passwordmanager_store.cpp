@@ -22,6 +22,7 @@
 #include "passwordmanager_store.h"
 
 #include <QFile>
+#include <QtDebug>
 
 #define PASSWORDMANAGER_STATEFILE "/etc/nemo-password-manager.conf"
 #define PASSWORDMANAGER_STATEFILE_TMP PASSWORDMANAGER_STATEFILE ".tmp"
