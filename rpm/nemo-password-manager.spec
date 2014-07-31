@@ -1,5 +1,5 @@
 Name: nemo-password-manager
-Version: 0.0.2
+Version: 0.0.8
 Release: 1
 Summary: D-Bus Service for changing and generating passwords
 
