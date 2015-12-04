@@ -7,7 +7,7 @@ Summary: D-Bus Service for changing and generating passwords
 %define dbus_service_path /org/nemo/passwordmanager
 
 Group: System Environment/Daemon
-License: GPL
+License: GPLv2
 URL: https://github.com/nemomobile/password-manager
 Source: %{name}-%{version}.tar.gz
 
